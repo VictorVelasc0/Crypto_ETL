@@ -94,7 +94,7 @@ Antes de ejecutar el script, asegúrate de seguir estos pasos:
 ```
 ## Iniciar el Proyecto
 Para utilizar este proyecto, sigue estos pasos:
-1. Clona el repositorio desde [URL del repositorio](URL_del_repositorio) o descarga el código fuente en tu máquina.
+1. Clona el repositorio desde [URL del repositorio](https://github.com/VictorVelasc0/Crypto_ETL) o descarga el código fuente en tu máquina.
 
 2. Asegúrate de tener Python instalado en tu sistema.
 
