@@ -5,12 +5,13 @@ Name: script_cryptoAPI
 Description: This file contains all the functions used by the application
 '''
 #Library imports
+from sqlite3 import OperationalError
 import requests
 import pandas as pd
 import sqlalchemy as sa #  For interact with DB
 from configparser import ConfigParser #  For reading the API KEY in config.ini folder
 
-def get_coin_to_usd(base_url, config_path, base_currency):
+def get_coin_api_information(config_path):
     '''
     Esta funcion consulta el API de crypto usando
     ->base_url:Url base de la api
@@ -21,11 +22,13 @@ def get_coin_to_usd(base_url, config_path, base_currency):
     '''
 
     try:
-        config=ConfigParser()
+        config = ConfigParser()
         config.read(config_path)
-        api_key=config["coin_api"]["api_key"]
+        api_key = config["coin_api"]["api_key"]
+        base_url = config["coin_api"]["base_url"]
+        base_currency = config["coin_api"]["base_currency"]
         url = f"{base_url}/{base_currency}"
-        params={
+        params = {
             "asset_id_base":base_currency,
         }
         headers = {
@@ -50,8 +53,8 @@ def build_table(json_data):
     '''
 
     dfCripto = pd.json_normalize(json_data, 'rates', ['asset_id_base'])
-    dfCripto = dfCripto.rename(columns = {'asset_id_base':'Base','asset_id_quote':'Moneda','rate':'Precio','time':'checked_at'})
-    dfCripto['checked_at'] = pd.to_datetime(dfCripto['checked_at'], format='%Y-%m-%dT%H:%M:%S.%fZ')
+    dfCripto = dfCripto.rename(columns = {'asset_id_base':'Base', 'asset_id_quote':'Moneda','rate':'Precio', 'time':'checked_at'})
+    dfCripto['checked_at'] = pd.to_datetime(dfCripto['checked_at'], format = '%Y-%m-%dT%H:%M:%S.%fZ')
     dfCripto['checked_at'] = dfCripto['checked_at'].dt.strftime('%Y-%m-%d %H:%M:%S')
     return dfCripto
 
@@ -78,12 +81,17 @@ def connect_to_dwh(config_path, config_section):
     try:
         engine = sa.create_engine(connetion_string)
         conn = engine.connect()
-        return conn, engine
+        #return conn, engine
+        return conn
     except sa.exc.OperationalError as e:
         print(f"Error durante conexión con la base de datos: {e}")
+        raise OperationalError from e
+    except sa.exc.RuntimeError as e:
+        print(f"Error se agotó el tiempo de intento de conexión: {e}")
+        raise RuntimeError from e
     except Exception as e:
         print(f"Error inesperado: {e}")
-        # Maneja otros errores inesperados aquí, si es necesario.
+        raise Exception from e
     
 def sql_file(sql_path,sql):
     '''

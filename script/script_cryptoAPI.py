@@ -19,40 +19,35 @@ import sys
 abs_path = os.path.dirname(os.path.abspath(__file__))
 utils_path = os.path.join(os.path.dirname(__file__), "../utils")
 sys.path.append(utils_path)
-from utils import get_coin_to_usd,build_table,connect_to_dwh,sql_file
-
-
-#  Variables of currency to check
-base_currency="USD" #  Valor en el que queremos ver el crypto
-base_url="https://rest.coinapi.io/v1/exchangerate"
+from utils import get_coin_api_information,build_table,connect_to_dwh,sql_file
 
 
 #  Get directory for ConfigParser and SQL files
-config_path=os.path.join(os.path.dirname(__file__),"../config/config.ini")
-sql_path=os.path.join(os.path.dirname(__file__),"../sql")
+config_path = os.path.join(os.path.dirname(__file__), "../config/config.ini")
+sql_path = os.path.join(os.path.dirname(__file__), "../sql")
 
 
 #  This is the script for create the DF and the table in redshift DWH
 
 #  Get the JSON from API
-apiResponse=get_coin_to_usd(base_url=base_url, config_path=config_path,base_currency=base_currency)
+apiResponse = get_coin_api_information(config_path = config_path)
 
 #  Create a DataFrame from JSON and give format
-df=build_table(apiResponse)
+df = build_table(apiResponse)
 print(df)
 
 #  Get connection to DataWareHouse
-conn, engine = connect_to_dwh(config_path=config_path,config_section="redshift")
+conn = connect_to_dwh(config_path = config_path, config_section = "redshift")
 
 #  Create Table name
-conn.execute(sql_file(sql_path=sql_path,sql='CREATE_TBL_CRYPTO.sql'))
+conn.execute(sql_file(sql_path = sql_path, sql = 'CREATE_TBL_CRYPTO.sql'))
 
 #  Insert DataFrame into Table
 df.to_sql(
-    name="crypto",
-    con=conn,
-    schema="dani_gt_10_coderhouse",
-    if_exists="replace",
-    method="multi",
-    index=False,
+    name = "crypto",
+    con = conn,
+    schema = "dani_gt_10_coderhouse",
+    if_exists = "replace",
+    method = "multi",
+    index = False,
 )
