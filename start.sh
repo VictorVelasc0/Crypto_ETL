@@ -13,3 +13,4 @@ python3 ./script/script_cryptoAPI.py
 
 #Stop virtual env
 deactivate
+echo "Entorno virtual 'env_crypto' ha sido desactivado."

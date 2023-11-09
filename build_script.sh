@@ -25,6 +25,7 @@ echo "Instalando dependencias"
 pip install requests
 pip install pandas
 pip install configparser
+pip install retrying
 pip install urllib3==1.26.6
 pip install sqlalchemy==1.4.36 psycopg2-binary
 pip install "redshift_connector[full]" sqlalchemy-redshift

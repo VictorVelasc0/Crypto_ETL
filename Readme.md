@@ -10,6 +10,7 @@ El proyecto está dividido en los siguientes apartados:
 - `env_crypto`: Contiene el entorno virtual de Python necesario para ejecutar el script.
 - `sql`: Contiene archivos SQL utilizados en el proyecto.
 - `utils`: Contiene un conjunto de funciones que se utilizan para ejecutar el script.
+- `logs`: Contiene logs de la ejecución del script de python.
 
 ## Uso de la API CoinAPI
 
@@ -54,27 +55,62 @@ Después de realizar una consulta a la API, los datos se mapean utilizando el si
 - `asset_id_quote` -> `Base`: La moneda base con la que se expresa el valor de la criptomoneda.
 - `rate` -> `Precio`: La tasa de cambio actual.
 
-## Creación de la Tabla en Amazon Redshift
+## Creación de la Tablas en Amazon Redshift
 
-Se ha creado una tabla en Amazon Redshift con la siguiente estructura:
+Se ha creado una tabla staging en Amazon Redshift con la siguiente estructura:
 
 ```sql
-CREATE TABLE IF NOT EXISTS "data-engineer-database".dani_gt_10_coderhouse.crypto
+CREATE TABLE IF NOT EXISTS "data-engineer-database".dani_gt_10_coderhouse.stg_crypto
 (
-Moneda varchar(30) distkey,
+Moneda varchar(30) primary key distkey,
 Base varchar(30),
 Precio numeric,
-checked_at timestamp
+created_at timestamp
 )
-sortkey(checked_at);
+sortkey(created_at); 
 ```
+Esta tabla almacena los resultados dados por coinAPI en el momento de la consulta y se remplaza a cada ejecución
+
+```sql
+CREATE TABLE IF NOT EXISTS "data-engineer-database".dani_gt_10_coderhouse.tbl_crypto
+(
+Moneda varchar(30) primary key distkey,
+Base varchar(30),
+Precio numeric,
+created_at timestamp,
+updated_at timestamp,
+executed_at timestamp
+)
+sortkey(created_at,updated_at,executed_at); 
+```
+
 ## Optimización de Redshift
 Se ha utilizado el optimizador de Amazon Redshift llamado **distkey** para la columna Moneda. Esto se hizo con la intención de optimizar la tabla para consultas utilizando el entorno MPP (Procesamiento de Datos en Paralelo Masivo) de Redshift. Cada slice dentro del nodo se divide por tipo de moneda de cripto, lo que permite una mejor optimización para consultas basadas en el tipo de moneda.
 
-También se ha agregado otro **sortkey** en la columna created_at para organizar la información de cada nodo ordenada por fecha de creación. Esto facilita la selección de valores utilizando la fecha como parámetro principal.
+También se ha agregado otro **sortkey** en la columna created_at y updated_at, executed_at para organizar la información de cada nodo ordenada por fecha de creación seguido de la fehca de actualización y ejecución. Esto facilita la selección de valores utilizando la fecha como parámetro principal.
 
-## Proceso ETL con Pandas
-Después de la creación de la tabla y la optimización en Amazon Redshift, se utilizó la biblioteca Pandas en Python para insertar valores en la tabla. Este proceso ETL se completó con éxito para cargar y organizar los datos en el Data Warehouse en la base de datos **data-engineer-database** en el schema **dani_gt_10_coderhouse**.
+## Proceso Creación Tablas con Pandas
+Después de la creación de las tablas y la optimización en Amazon Redshift, se utilizó la biblioteca Pandas en Python para insertar valores en la tabla. Este proceso ETL se completó con éxito para cargar y organizar los datos en el Data Warehouse en la base de datos **data-engineer-database** en el schema **dani_gt_10_coderhouse**.
+
+## Documentación del Proceso ETL
+Proceso de Carga SCD 1
+Se ha implementado un proceso de carga SCD 1 (Slowly Changing Dimension 1) en el proyecto. Esto permite manejar los cambios en los datos y mantener un historial de las modificaciones. El siguiente SQL se utiliza para llevar a cabo este proceso:
+```sql
+MERGE INTO "data-engineer-database".dani_gt_10_coderhouse.tbl_crypto
+USING "data-engineer-database".dani_gt_10_coderhouse.stg_crypto
+ON tbl_crypto.Moneda=stg_crypto.Moneda AND tbl_crypto.created_at=stg_crypto.created_at
+WHEN MATCHED THEN
+    UPDATE SET 
+    Precio = stg_crypto.Precio,
+    created_at = stg_crypto.created_at,
+    updated_at = GETDATE(),
+    executed_at = GETDATE()
+WHEN NOT MATCHED THEN
+    INSERT (Moneda, Base, Precio, created_at, updated_at, executed_at)
+    VALUES (stg_crypto.Moneda, stg_crypto.Base, stg_crypto.Precio, stg_crypto.created_at, GETDATE(), GETDATE())
+```
+
+Este SQL se utiliza para comparar los datos en la tabla **tbl_crypto** con los datos en la tabla de etapa **stg_crypto**. Si se encuentran la misma fecha de actualización de la consulta a la API created_at, se actualizan los registros existentes y se insertan nuevos registros en **tbl_crypto** con las fechas de modificación apropiadas.
 
 ## Antes de Comenzar
 
@@ -87,7 +123,9 @@ Antes de ejecutar el script, asegúrate de seguir estos pasos:
 ├── /script
 │ ├── script_cryptoAPI.py
 ├── /sql
+│ ├── CREATE_STG_TBL_CRYPTO.sql
 │ ├── CREATE_TBL_CRYPTO.sql
+│ ├── MERGE_STG_TO_CRYPTO.sql
 ├── start.sh
 ├── build_script.sh
 ├── ...
