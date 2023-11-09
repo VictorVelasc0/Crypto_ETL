@@ -19,7 +19,7 @@ import sys
 abs_path = os.path.dirname(os.path.abspath(__file__))
 utils_path = os.path.join(os.path.dirname(__file__), "../utils")
 sys.path.append(utils_path)
-from utils import get_coin_api_information,build_table,connect_to_dwh,sql_file
+from utils import get_coin_api_information,build_dataframe,connect_to_dwh,sql_file,create_tbl_from_df
 
 
 #  Get directory for ConfigParser and SQL files
@@ -30,24 +30,25 @@ sql_path = os.path.join(os.path.dirname(__file__), "../sql")
 #  This is the script for create the DF and the table in redshift DWH
 
 #  Get the JSON from API
-apiResponse = get_coin_api_information(config_path = config_path)
+apiResponse = get_coin_api_information(config_path = config_path,config_section="coin_api")
 
 #  Create a DataFrame from JSON and give format
-df = build_table(apiResponse)
-print(df)
+df = build_dataframe(apiResponse)
 
 #  Get connection to DataWareHouse
 conn = connect_to_dwh(config_path = config_path, config_section = "redshift")
 
-#  Create Table name
+#  Create Table stg
+conn.execute(sql_file(sql_path = sql_path, sql = 'CREATE_STG_TBL_CRYPTO.sql'))
+
+#  Create Table crypto
 conn.execute(sql_file(sql_path = sql_path, sql = 'CREATE_TBL_CRYPTO.sql'))
 
-#  Insert DataFrame into Table
-df.to_sql(
-    name = "crypto",
-    con = conn,
-    schema = "dani_gt_10_coderhouse",
-    if_exists = "replace",
-    method = "multi",
-    index = False,
-)
+#  Insert DataFrame into Table stg
+create_tbl_from_df(df=df, name = "stg_crypto", con = conn, schema = "dani_gt_10_coderhouse", if_exists = "replace")
+
+# SCD 1: Adding changes to Table Crypto
+conn.execute(sql_file(sql_path = sql_path, sql = 'CREATE_TBL_CRYPTO.sql'))
+
+# Close conection to DWH
+conn.close()
