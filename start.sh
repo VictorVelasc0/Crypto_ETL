@@ -1,16 +1,7 @@
 #!/bin/bash
 
-# Activar el entorno virtual
-source env_crypto/bin/activate
-
-# Opcional: Puedes agregar comandos adicionales aquí si es necesario
-# Ejemplo: cd /ruta/a/tu/proyecto
-
-echo "Entorno virtual 'env_crypto' ha sido activado."
-
-echo "Ejecutando archivo script"
-python3 ./script/script_cryptoAPI.py
-
-#Stop virtual env
-deactivate
-echo "Entorno virtual 'env_crypto' ha sido desactivado."
+# Ejecutar contenedor y levantarlo
+docker compose up -d
+docker compose ps
+echo "The container is running in the background"
+echo "For display the web server http://localhost:8081/"
