@@ -1,4 +1,4 @@
-CREATE TABLE IF NOT EXISTS "data-engineer-database".dani_gt_10_coderhouse.stg_crypto
+CREATE TABLE IF NOT EXISTS dani_gt_10_coderhouse.crypto_stg
 (
 Moneda varchar(256) primary key distkey,
 Base varchar(256),

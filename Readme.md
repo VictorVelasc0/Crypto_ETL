@@ -6,11 +6,9 @@ El proyecto "ETL Crypto Currency" tiene como objetivo descargar datos desde la A
 
 El proyecto está dividido en los siguientes apartados:
 
-- `config`: Contiene archivos para la autenticación de la API y la configuración del Data Warehouse.
-- `env_crypto`: Contiene el entorno virtual de Python necesario para ejecutar el script.
-- `sql`: Contiene archivos SQL utilizados en el proyecto.
-- `utils`: Contiene un conjunto de funciones que se utilizan para ejecutar el script.
-- `logs`: Contiene logs de la ejecución del script de python.
+- `dags`: Contiene los DAGs necesarios para la ejecución el proceso ETL
+    - `sql`: Contiene archivos SQL utilizados en el proyecto.
+- `utils`: Contiene un conjunto de funciones que se utilizan para ejecutar el ETL.
 
 ## Uso de la API CoinAPI
 
@@ -112,39 +110,55 @@ WHEN NOT MATCHED THEN
 
 Este SQL se utiliza para comparar los datos en la tabla **tbl_crypto** con los datos en la tabla de etapa **stg_crypto**. Si se encuentran la misma fecha de actualización de la consulta a la API created_at, se actualizan los registros existentes y se insertan nuevos registros en **tbl_crypto** con las fechas de modificación apropiadas.
 
-## Antes de Comenzar
+## DAG en Airflow
+El proceso ETL fue automatizado implementando un Direct Acyclic Graph en el cual se crean las tablas staging y crypto, posteriormente se cargan usando los datos descargados de coinAPi mediante un script de python que lee y da formato usando un dataframe y posteriormente las compara para realizar el proceso SCD 1 y actualizar los precios de las cryptodivisas al día.
 
-Antes de ejecutar el script, asegúrate de seguir estos pasos:
+![cryptoETL](./images/cryptoETL.png)
 
-1. Descarga la carpeta `/config` con el archivo `config.ini`. Este archivo debe contener las credenciales de acceso a CoinAPI y Redshift. Coloca esta carpeta en el mismo nivel que los scripts `start.sh` y `build_script.sh`.
-```
-├── /config
-│ ├── config.ini
-├── /script
-│ ├── script_cryptoAPI.py
-├── /sql
-│ ├── CREATE_STG_TBL_CRYPTO.sql
-│ ├── CREATE_TBL_CRYPTO.sql
-│ ├── MERGE_STG_TO_CRYPTO.sql
-├── start.sh
-├── build_script.sh
-├── ...
-```
 ## Iniciar el Proyecto
 Para utilizar este proyecto, sigue estos pasos:
 1. Clona el repositorio desde [URL del repositorio](https://github.com/VictorVelasc0/Crypto_ETL) o descarga el código fuente en tu máquina.
-
-2. Asegúrate de tener Python instalado en tu sistema.
-
-3. Ejecuta el siguiente comando para iniciar el entorno virtual de Python y descargar todas las dependencias necesarias:
-Para utilizar este proyecto, sigue estos pasos:
-```
-sh build_script.sh
-```
-4. Ejecuta el siguiente comando para correr el script principal de Python una vez instaladas las dependencias necesarias:
+2. Ejecuta el siguiente comando para iniciar los contenedores de Airflow y ejecutar el Webserver
 ```
 sh start.sh
 ```
+3. Para detener los contenedores ejecute el siguiente comando:
+```
+sh stop.sh
+```
+
+## Iniciar el WebServer de Airflow
+Para ingresar a la interfáz gráfica de Airflow ingresa al  [Web UI Airflow](http://localhost:8081/home)
+
+## Antes de comenzar
+Antes de comenzar a ejecutar el proceso ETL deberás realizar una serie de configuraciones iniciales, necesarias para que el entorno sea capaz de conectarse a la base de datos posgresql utilizada, sigue los siguientes pasos:
+
+1. Abre el WebServer de airflow [Web UI Airflow](http://localhost:8081/home).
+
+![webServer](./images/airflowWebServer.png)
+
+2. Ingresa a Admin -> connections y crea una nueva conexión.
+
+![conectionsAirflow](./images/airflowConn.png)
+
+3. Ingresa los el ID de conexión y los datos de connection Id, host, user, database, password y port dados por el administrador del ETL.
+
+![conectionsAirflowConfig](./images/airflowConnConfig.png)
+
+4. Ingresa a Admin -> Variables y agrega la información de las siguientes varibles:
+    - `DB_HOST`: Hostname de Refshift configurado anteriormente
+    - `DB_USER`: User de Refshift configurado anteriormente
+    - `DB_NAME`: Data base name de Refshift configurado anteriormente
+    - `DB_PORT`: Puerto de Redshift
+    - `DB_PASSWORD`: Contraseña de Redshift dada por el administrador del Data Warehouse
+    - `DWH_SCHEMA`: Esquema donde se tiene permisos de lectura y escritura para ejecutar el proceso ETL
+    - `API_KEY`: Clave API de coinAPI para la extracción de datos crypto
+
+![varAirflowConfig](./images/airflowVariablesConfig.png)
+
+5. Asegurarse de tener configuradas todas las variables necesarias para ejecutar el DAG.
+
+![var2AirflowConfig](./images/airflowVariablesAll.png)
 ## Contribuciones
 Las contribuciones a este proyecto son bienvenidas. Si deseas contribuir, asegúrate de crear un "fork" del repositorio y abrir una solicitud de extracción con tus cambios.
 
