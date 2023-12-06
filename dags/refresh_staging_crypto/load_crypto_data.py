@@ -16,7 +16,7 @@ doc_md = """
 import os
 from datetime import datetime, timedelta
 from airflow.models import DAG, Variable
-from airflow.operators.dummy import DummyOperator
+from airflow.operators.bash import BashOperator
 from airflow.providers.postgres.operators.postgres import PostgresOperator
 from airflow.operators.python_operator import PythonOperator
 from utils.main import extract_transform_load_crypto
@@ -59,8 +59,9 @@ with DAG(
     template_searchpath=queries_base_path,
 ) as dag:
     # -------------- Tasks ----------------
-    start_etl_process = DummyOperator(
-        task_id="start_etl_process"
+    start_etl_process = BashOperator(
+    task_id="start_etl_process",
+    bash_command="echo 'Comenzando proceso ETL'"
     )
     
     create_tbl_crypto_stg = PostgresOperator(
@@ -100,8 +101,9 @@ with DAG(
         }
     )
     
-    end_etl_process = DummyOperator(
-        task_id="end_etl_process"
+    end_etl_process = BashOperator(
+        task_id="end_etl_process",
+        bash_command="echo 'Proceso ETL terminado'"
     )
 
 # ---------------- Execution Order ------------------
