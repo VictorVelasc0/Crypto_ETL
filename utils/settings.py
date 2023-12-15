@@ -1,4 +1,9 @@
-""" Global project settings"""
+"""
+Author: Victor Velasco
+Name: settings
+Descritpion: This script is used for made the settings in datetime used in airflow and also for 
+defining the airlfow environment is local or not
+"""
 
 import os
 from pendulum import timezone

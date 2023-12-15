@@ -108,12 +108,18 @@ WHEN NOT MATCHED THEN
     VALUES (stg_crypto.Moneda, stg_crypto.Base, stg_crypto.Precio, stg_crypto.created_at, GETDATE(), GETDATE())
 ```
 
-Este SQL se utiliza para comparar los datos en la tabla **tbl_crypto** con los datos en la tabla de etapa **stg_crypto**. Si se encuentran la misma fecha de actualización de la consulta a la API created_at, se actualizan los registros existentes y se insertan nuevos registros en **tbl_crypto** con las fechas de modificación apropiadas.
+Este SQL se utiliza para comparar los datos en la tabla **crypto** con los datos en la tabla de etapa **crypto_stg**. Si se encuentran la misma fecha de actualización de la consulta a la API created_at, se actualizan los registros existentes y se insertan nuevos registros en **crypto_stg** con las fechas de modificación apropiadas.
 
 ## DAG en Airflow
-El proceso ETL fue automatizado implementando un Direct Acyclic Graph en el cual se crean las tablas staging y crypto, posteriormente se cargan usando los datos descargados de coinAPi mediante un script de python que lee y da formato usando un dataframe y posteriormente las compara para realizar el proceso SCD 1 y actualizar los precios de las cryptodivisas al día.
+El proceso ETL fue automatizado implementando un Direct Acyclic Graph que se ejecuta todos los días a las 00:00 HRS de México, el proceso revisa si la API de coinAPI está disponible para posteriormente crear las tablas staging y crypto que almacenarán la información en caso de que no existan, despúes carga los datos usando la información proporcionada de coinAPi mediante un script de python que lee y da formato usando un dataframe,  después compara la información actual cargada en staging con la histórica de crypto para realizar el proceso SCD 1 y actualizar los precios de las cryptodivisas al día en la tabla histórica.
 
 ![cryptoETL](./images/cryptoETL.png)
+
+Finalmente crea un informe detallado de las 5 cryptomonedas que tuvieron un % de incremento en el precio mayor respecto al precio más reciente y al promedio calculado histórico de cada divisa, hace lo mismo para encontrar el las 5 monedas con menor aumento de precio al día y encuentra las 5 monedas con el precio más alto registrado al día.
+
+Una vez ejecutado envía un correo electrónico de alerta al usuario informando los datos más relevantes del día en el mundo de las cryptomonedas.
+
+![cryptoETL](./images/airflowAlert.png)
 
 ## Iniciar el Proyecto
 Para utilizar este proyecto, sigue estos pasos:
@@ -133,7 +139,7 @@ Para ingresar a la interfáz gráfica de Airflow ingresa al  [Web UI Airflow](ht
 ## Antes de comenzar
 Antes de comenzar a ejecutar el proceso ETL deberás realizar una serie de configuraciones iniciales, necesarias para que el entorno sea capaz de conectarse a la base de datos posgresql utilizada, sigue los siguientes pasos:
 
-1. Abre el WebServer de airflow [Web UI Airflow](http://localhost:8081/home).
+1. Abre el WebServer de airflow [Web UI Airflow](http://localhost:8081/home) ingresa el usuario airflow y password airflow.
 
 ![webServer](./images/airflowWebServer.png)
 
@@ -141,11 +147,15 @@ Antes de comenzar a ejecutar el proceso ETL deberás realizar una serie de confi
 
 ![conectionsAirflow](./images/airflowConn.png)
 
-3. Ingresa los el ID de conexión y los datos de connection Id, host, user, database, password y port dados por el administrador del ETL.
+3. Ingresa el ID de conexión y los datos de connection Id, host, user, database, password y port dados por el administrador del ETL.
 
 ![conectionsAirflowConfig](./images/airflowConnConfig.png)
 
-4. Ingresa a Admin -> Variables y agrega la información de las siguientes varibles:
+4. Ingresa el ID de conexión: coin_api el URL: https://rest.coinapi.io/ y el API_KEY dado por el administrador en extras.
+
+![conectionsAirflowhttp](./images/airflowHttpConn.png)
+
+5. Ingresa a Admin -> Variables y agrega la información de las siguientes varibles:
     - `DB_HOST`: Hostname de Refshift configurado anteriormente
     - `DB_USER`: User de Refshift configurado anteriormente
     - `DB_NAME`: Data base name de Refshift configurado anteriormente
@@ -153,12 +163,23 @@ Antes de comenzar a ejecutar el proceso ETL deberás realizar una serie de confi
     - `DB_PASSWORD`: Contraseña de Redshift dada por el administrador del Data Warehouse
     - `DWH_SCHEMA`: Esquema donde se tiene permisos de lectura y escritura para ejecutar el proceso ETL
     - `API_KEY`: Clave API de coinAPI para la extracción de datos crypto
+    - `EMAIL_SENDER`: Es el correo que se usará para enviar los email de alertas de precios de criptomonedas (airflowalertsresume@gmail.com)
+    - `EMAIL_RECEIVER`: Es el correo que recibirá las alertas o notificaciones sobre las alertas de precios en criptomonedas (poner su correo)
+    - `GMAIL_SMTP_SECRET`: Es la contraseña usada para utilizar el servicio SMTP que envía los correos electrónicos (preguntar al administrador)
 
 ![varAirflowConfig](./images/airflowVariablesConfig.png)
 
-5. Asegurarse de tener configuradas todas las variables necesarias para ejecutar el DAG.
+6. Asegurarse de tener configuradas todas las variables necesarias para ejecutar el DAG.
 
 ![var2AirflowConfig](./images/airflowVariablesAll.png)
+
+7. Ejecuta el DAG desde el UI de airflow encendiendolo.
+
+![varAirflowConfig](./images/airflowFinal.png)
+
+
+Listo :) el proceso ETL extrae los datos de la API y los ingresa a las tablas en Redshift una vez ingreados los extrae nuevamente para generar un informe detallado de los precios al correo seleccionado.
+
 ## Contribuciones
 Las contribuciones a este proyecto son bienvenidas. Si deseas contribuir, asegúrate de crear un "fork" del repositorio y abrir una solicitud de extracción con tus cambios.
 
