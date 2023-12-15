@@ -113,7 +113,7 @@ Este SQL se utiliza para comparar los datos en la tabla **crypto** con los datos
 ## DAG en Airflow
 El proceso ETL fue automatizado implementando un Direct Acyclic Graph que se ejecuta todos los días a las 00:00 HRS de México, el proceso revisa si la API de coinAPI está disponible para posteriormente crear las tablas staging y crypto que almacenarán la información en caso de que no existan, despúes carga los datos usando la información proporcionada de coinAPi mediante un script de python que lee y da formato usando un dataframe,  después compara la información actual cargada en staging con la histórica de crypto para realizar el proceso SCD 1 y actualizar los precios de las cryptodivisas al día en la tabla histórica.
 
-![cryptoETL](./images/cryptoETL.png)
+![cryptoETL](./images/cryptoETL1.png)
 
 Finalmente crea un informe detallado de las 5 cryptomonedas que tuvieron un % de incremento en el precio mayor respecto al precio más reciente y al promedio calculado histórico de cada divisa, hace lo mismo para encontrar el las 5 monedas con menor aumento de precio al día y encuentra las 5 monedas con el precio más alto registrado al día.
 
@@ -167,11 +167,11 @@ Antes de comenzar a ejecutar el proceso ETL deberás realizar una serie de confi
     - `EMAIL_RECEIVER`: Es el correo que recibirá las alertas o notificaciones sobre las alertas de precios en criptomonedas (poner su correo)
     - `GMAIL_SMTP_SECRET`: Es la contraseña usada para utilizar el servicio SMTP que envía los correos electrónicos (preguntar al administrador)
 
-![varAirflowConfig](./images/airflowVariablesConfig.png)
+![varAirflowConfig](./images/airflowVariables.png)
 
 6. Asegurarse de tener configuradas todas las variables necesarias para ejecutar el DAG.
 
-![var2AirflowConfig](./images/airflowVariablesAll.png)
+![var2AirflowConfig](./images/airflowVariablesAll1.png)
 
 7. Ejecuta el DAG desde el UI de airflow encendiendolo.
 
