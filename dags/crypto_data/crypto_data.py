@@ -38,9 +38,9 @@ default_args = {
 dwh_host = Variable.get("DB_HOST")
 dwh_user = Variable.get("DB_USER")
 dwh_name = Variable.get("DB_NAME")
-dwh_port = Variable.get("DB_PORT") 
+dwh_port = Variable.get("DB_PORT")
 dwh_password = Variable.get("DB_PASSWORD")
-dwh_schema=Variable.get("DB_SCHEMA")
+dwh_schema = Variable.get("DB_SCHEMA")
 api_key = Variable.get("API_KEY")
 email_sender = Variable.get("EMAIL_SENDER")
 email_receiver = Variable.get("EMAIL_RECEIVER")
@@ -57,7 +57,7 @@ with DAG(
     default_args=default_args,
     max_active_runs=1,
     schedule_interval=schedule_interval,
-    start_date=datetime(2023,12,1, tzinfo=LOCAL_TZ),
+    start_date=datetime(2023, 12, 1, tzinfo=LOCAL_TZ),
     description="Este proceso extrae información de las criptodivisas desde CoinAPI y las guarda en las tablas crypto & crypto_stg a las 00:00 HRS todos los días",
     catchup=True,
     doc_md=doc_md,
@@ -65,39 +65,34 @@ with DAG(
     template_searchpath=queries_base_path,
 ) as dag:
     # -------------- Tasks ----------------
-    
+
     is_coin_api_available = HttpSensor(
         task_id="is_coin_api_available",
         http_conn_id="coin_api",
         endpoint="v1/exchangerate/BTC/USD",
-        response_check=lambda response: response.status_code==200,
+        response_check=lambda response: response.status_code == 200,
         poke_interval=5,
-        timeout=20
+        timeout=20,
     )
-    
+
     start_etl_process = BashOperator(
-    task_id="start_etl_process",
-    bash_command="echo 'Comenzando proceso ETL'"
+        task_id="start_etl_process", bash_command="echo 'Comenzando proceso ETL'"
     )
     with TaskGroup("BUILD_TABLES_CRYPTO", prefix_group_id=False) as build_tables_crypto:
         create_tbl_crypto_stg = PostgresOperator(
             task_id="create_tbl_crypto_stg",
             postgres_conn_id="redshift_conn",
             sql="CREATE_STG_TBL_CRYPTO.sql",
-            hook_params={	
-                "options": f"-c search_path={dwh_schema}"
-            }
+            hook_params={"options": f"-c search_path={dwh_schema}"},
         )
-        
+
         create_tbl_crypto = PostgresOperator(
             task_id="create_tbl_crypto",
             postgres_conn_id="redshift_conn",
             sql="CREATE_TBL_CRYPTO.sql",
-            hook_params={	
-                "options": f"-c search_path={dwh_schema}"
-            }
+            hook_params={"options": f"-c search_path={dwh_schema}"},
         )
-    
+
     load_data_crypto = PythonOperator(
         task_id="load_crypto_data",
         python_callable=extract_transform_load_crypto,
@@ -112,11 +107,11 @@ with DAG(
             "dwh_schema": dwh_schema,
             "dwh_password": dwh_password,
             "api_key": api_key,
-            "executed_at":"'{{ data_interval_end | ds }}'",
-            "updated_at":"'{{ data_interval_end | ts }}'",
-        }
+            "executed_at": "'{{ data_interval_end | ds }}'",
+            "updated_at": "'{{ data_interval_end | ts }}'",
+        },
     )
-    
+
     send_email_alert = PythonOperator(
         task_id="send_email_alert",
         python_callable=send_alert_summary,
@@ -128,7 +123,7 @@ with DAG(
             "dwh_port": dwh_port,
             "dwh_schema": dwh_schema,
             "dwh_password": dwh_password,
-            "updated_at":"'{{ data_interval_end | ts }}'",
+            "updated_at": "'{{ data_interval_end | ts }}'",
             "min_price": min_price,
             "max_price": max_price,
             "email_sender": email_sender,
@@ -136,12 +131,11 @@ with DAG(
             "email_smtp_secret": email_smtp_secret,
             "dag_name": "{{ dag }}",
             "ds": "{{ ds }}",
-        }
+        },
     )
-    
+
     end_etl_process = BashOperator(
-        task_id="end_etl_process",
-        bash_command="echo 'Proceso ETL terminado'"
+        task_id="end_etl_process", bash_command="echo 'Proceso ETL terminado'"
     )
 
 # ---------------- Execution Order ------------------
