@@ -1,0 +1,14 @@
+--constraint "https://raw.githubusercontent.com/apache/airflow/constraints-2.7.2/constraints-3.11.txt"
+
+apache-airflow[ssh]==2.7.2
+apache-airflow-providers-pagerduty==3.3.1
+apache-airflow-providers-amazon==8.7.1
+apache-airflow-providers-common-sql==1.7.2
+apache-airflow-providers-cncf-kubernetes==7.6.0
+apache-airflow-providers-mysql==5.3.1
+apache-airflow-providers-papermill==3.2.1
+ipykernel==6.16.2
+pandas==2.1.1
+mlflow==2.9.2
+pytz==2023.3.post1
+xgboost==1.6.2
