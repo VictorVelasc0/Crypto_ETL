@@ -18,5 +18,7 @@ jobs:
         - name: Deploy on main 
           run: |
             echo "Deploying in main"
+            echo "${{ github.event.workflow_run.conclusion  == 'success' }}"
+            echo "${{ github.event.pull_request.base.ref == 'main' }}"
             echo "Deployed :D"
           
