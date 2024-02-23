@@ -24,7 +24,9 @@ jobs:
     - name: Check branch name
       run: echo "${{ github.head_ref }}"
     - name: Check pull request event
-      run: echo "${{ github.event.pull_request.base.ref }}
+      run: |
+        echo "${{ github.event.pull_request.base.ref }}
+        echo "${{ github.base_ref }}
     - name: Install Python dependencies
       run: |
         python -m pip install --upgrade pip
