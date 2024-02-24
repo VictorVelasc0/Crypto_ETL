@@ -18,5 +18,5 @@ jobs:
     steps:
         - name: Deploy on main 
           run: |
-            echo "Deploying in main :D"
+            echo "Deploying in main :)"
           
