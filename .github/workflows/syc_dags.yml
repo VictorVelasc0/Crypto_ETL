@@ -21,5 +21,5 @@ jobs:
             echo "${{ github.event.workflow_run.conclusion  == 'success' }}"
             echo "${{ github.event.pull_request.base.ref == 'main' }}"
             echo "${{ github.event.pull_request.base.ref }}"
-            echo "Deployed :)"
+            echo "Deployed :D"
           
