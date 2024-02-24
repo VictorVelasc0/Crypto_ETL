@@ -7,13 +7,14 @@ on:
     types:
       - completed
   pull_request:
+    branches: [ "main" ]
     types:
       - closed
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    if: ${{ github.event.workflow_run.conclusion  == 'success' }} && ${{ github.event.pull_request.base.ref == 'main' }}
+    if:  github.event.workflow_run.conclusion  == 'success' &&  github.event.pull_request.base.ref == 'main' 
     steps:
         - name: Deploy on main 
           run: |
@@ -21,5 +22,7 @@ jobs:
             echo "${{ github.event.workflow_run.conclusion  == 'success' }}"
             echo "${{ github.event.pull_request.base.ref == 'main' }}"
             echo "${{ github.event.pull_request.base.ref }}"
+            echo "${{ github.ref }}"
+            echo "${{ github.base_ref }}"
             echo "Deployed :D"
           
