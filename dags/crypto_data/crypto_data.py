@@ -21,7 +21,7 @@ doc_md = """
     Este proceso realiza la extracción de datos de criptomonedas de La API CoinAPI;
     actualiza la información dada en la tabla stg y posteriormente la compara para cargar
     la información actualizada de las cryptodivisas en caso de que haya alguna actualización
-    actualiza y muestra la fecha .
+    actualiza y muestra la fecha.
 """
 
 # ---------- Globals ---------------
