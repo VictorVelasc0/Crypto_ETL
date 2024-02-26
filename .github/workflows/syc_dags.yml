@@ -22,4 +22,4 @@ jobs:
             echo "Deploying in main :)"
             echo " github.event.pull_request.base.ref == 'main' "
             echo "${{ github.event.pull_request.base.ref }}"
-            echo "${{github.event.pull_request.base.ref == 'main' }} "
+            echo "${{ github.event.pull_request.base.ref == 'main' }} "
