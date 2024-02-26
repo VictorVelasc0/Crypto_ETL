@@ -3,7 +3,7 @@ name: Sync DAGs
 on:
   pull_request:
     branches:
-      - 'development'
+      - 'main'
     types:
       - closed
   workflow_run:
