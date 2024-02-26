@@ -6,11 +6,8 @@ on:
       - 'Test DAGs'
     types:
       - completed
-  push:
-    # Sequence of patterns matched against refs/heads
-    branches:
-      - main
-      - development
+  pull_request:
+    branches: [ "main","development" ]
     types:
       - closed
 
