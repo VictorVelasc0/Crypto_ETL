@@ -20,4 +20,3 @@ jobs:
         - name: Deploy on main 
           run: |
             echo "Deploying in main :)"
-          
