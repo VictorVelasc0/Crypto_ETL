@@ -10,6 +10,7 @@ on:
     # Sequence of patterns matched against refs/heads
     branches:
       - main
+      - development
     types:
       - closed
 
