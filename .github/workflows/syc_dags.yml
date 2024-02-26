@@ -20,7 +20,3 @@ jobs:
         - name: Deploy on main 
           run: |
             echo "Deploying in main :D"
-            echo "Github head_ref: ${{ github.head_ref }}"
-            echo "Github base_ref: ${{ github.base_ref }}"
-            echo "Github ref: ${{ github.ref }}"
-            echo "Conditional ${{ github.ref == 'main' }}"
