@@ -1,12 +1,9 @@
 name: Sync DAGs
 
 on:
-  workflow_run:
-    workflows:
-      - 'Test DAGs'
-    types:
-      - completed
   pull_request:
+    branches:
+      - 'development'
     types:
       - closed
 
