@@ -1,16 +1,14 @@
 name: Sync DAGs
 
 on:
-  pull_request:
-    branches:
-      - 'development'
-    types:
-      - closed
   workflow_run:
     workflows:
       - 'Test DAGs'
     types:
       - completed
+  pull_request:
+    types:
+      - closed
 
 jobs:
   deploy:
@@ -21,3 +19,5 @@ jobs:
           run: |
             echo "Deploying in main :D"
             echo "${{ github.ref_name }}"
+            echo "${{ github.ref_name == 'main' }}"
+            echo "${{ github.event.workflow_run.conclusion  == 'success' && github.ref_name == 'main' }}"
