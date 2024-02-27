@@ -18,6 +18,6 @@ jobs:
         - name: Deploy on main 
           run: |
             echo "Deploying in main :)"
-            echo "head_ref:${{ github.head_ref }} "
-            echo "base_ref:${{ github.base_ref }} "
-            echo "ref_name${{ github.ref_name }}"
+            echo "head_ref: ${{ github.head_ref }} "
+            echo "base_ref: ${{ github.base_ref }} "
+            echo "ref_name: ${{ github.ref_name }}"
