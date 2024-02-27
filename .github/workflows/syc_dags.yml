@@ -18,6 +18,3 @@ jobs:
         - name: Deploy on main 
           run: |
             echo "Deploying in main :D"
-            echo "${{ github.ref_name }}"
-            echo "${{ github.ref_name == 'main' }}"
-            echo "${{ github.event.workflow_run.conclusion  == 'success' && github.ref_name == 'main' }}"
