@@ -1,7 +1,5 @@
 name: Sync DAGs
 
-name: Sync DAGs
-
 on:
   workflow_run:
     workflows:
