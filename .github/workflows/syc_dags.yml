@@ -10,11 +10,8 @@ on:
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    if: ${{ github.head_ref == 'development'}}
     steps:
         - name: Deploy on main 
           run: |
-            echo "workflow: ${{ github.event.workflow_run.conclusion }}"
             echo "Deploying in main :)"
-            echo "head_ref: ${{ github.head_ref }} "
-            echo "base_ref: ${{ github.base_ref }} "
-            echo "ref_name: ${{ github.ref_name }}"
