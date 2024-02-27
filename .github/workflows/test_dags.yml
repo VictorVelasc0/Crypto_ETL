@@ -24,7 +24,7 @@ jobs:
         echo "head_ref:${{ github.head_ref }}"
         echo "ref_name:${{ github.ref_name }}"
         echo "base_ref:${{ github.base_ref }}"
-        echo "ref:${{ github.ref }}"
+        echo "ref:${{ github.ref }}" 
     - name: Install Python dependencies
       run: |
         python -m pip install --upgrade pip
